@@ -4,7 +4,7 @@ env/
 .env
 
 # Database
-db.sqlite3
+# Note: db.sqlite3 normally ignored, but forced to load for Vercel ephemeral clone hack.
 
 # Python Cache
 __pycache__/
