@@ -1,0 +1,4 @@
+Django>=4.2,<5.2.12
+requests==2.31.0
+python-dotenv==1.0.0
+urllib3==2.2.1

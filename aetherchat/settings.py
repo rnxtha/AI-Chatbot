@@ -31,7 +31,7 @@ SECRET_KEY = 'django-insecure-vea$(xl#i2rw0#l%rztze)erpdlc)@b)v7-fvmn$gm=5+3q=^l
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
