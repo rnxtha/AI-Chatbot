@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AetherChat - Intelligent AI Companion</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+    <!-- Live Space Background Image -->
+    <div class="space-bg-image"></div>
+    <canvas id="starfield"></canvas>
+
+    <!-- Frame Wrapper: Universal Glass Window -->
+    <div class="app-glass-frame">
+        <!-- Mac-OS window control bar aesthetics -->
+        <div class="window-controls">
+            <span class="dot close-dot"></span>
+            <span class="dot min-dot"></span>
+            <span class="dot max-dot"></span>
+        </div>
+        
+        <nav class="navbar">
+            <div class="nav-logo">
+                <div class="logo-sphere"
+                    style="background: radial-gradient(circle at 30% 30%, #fff, #b026ff, var(--bg-dark)); box-shadow: 0 0 15px #b026ff;">
+                </div>
+                <span>RN AI</span>
+            </div>
+
+            <!-- Glowing Pulse Status (centered exactly like mockup) -->
+            <div class="network-status">
+                <span class="status-text">CORE SYNC <span class="status-highlight">ACTIVE</span></span>
+            </div>
+
+            <div class="nav-auth">
+                {% if user.is_authenticated %}
+                <span class="user-greeting">Welcome, {{ user.username }}</span>
+                <a href="{% url 'logout' %}" class="btn btn-outline" style="margin-left:15px;">Logout</a>
+                {% else %}
+                <a href="{% url 'login' %}" class="btn btn-outline">Login</a>
+                <a href="{% url 'signup' %}" class="btn btn-primary glow-btn-small">Sign Up</a>
+                {% endif %}
+            </div>
+        </nav>
+
+        <main class="main-container">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Moving Star Live Script (Warp Speed) -->
+    <script>
+        const canvas = document.getElementById("starfield");
+        if(canvas) {
+            const ctx = canvas.getContext("2d");
+            
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+            
+            window.addEventListener('resize', () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            });
+
+            const numStars = 800; // Dense starfield
+            const stars = [];
+            const speed = 2; // Warp speed!
+
+            // Init stars
+            for (let i = 0; i < numStars; i++) {
+                stars.push({
+                    x: Math.random() * width - width / 2,
+                    y: Math.random() * height - height / 2,
+                    z: Math.random() * width,
+                    size: Math.random() * 1.5 + 0.5
+                });
+            }
+
+            function drawStars() {
+                ctx.clearRect(0, 0, width, height);
+                
+                const cx = width / 2;
+                const cy = height / 2;
+
+                ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+                
+                stars.forEach(star => {
+                    star.z -= speed;
+                    if (star.z <= 0) {
+                        star.z = width;
+                        star.x = Math.random() * width - cx;
+                        star.y = Math.random() * height - cy;
+                    }
+
+                    // Calculate 3D projection
+                    const px = cx + (star.x / star.z) * width;
+                    const py = cy + (star.y / star.z) * width;
+                    
+                    // Opacity based on distance
+                    const alpha = 1 - (star.z / width);
+                    
+                    // Scale size based on distance
+                    const pSize = star.size * (width / star.z) * 0.5;
+
+                    if (px >= 0 && px <= width && py >= 0 && py <= height) {
+                        ctx.beginPath();
+                        ctx.arc(px, py, pSize, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                        ctx.fill();
+                        
+                        // Add subtle blue glow to closer stars
+                        if(star.z < width * 0.3) {
+                            ctx.shadowBlur = 10;
+                            ctx.shadowColor = "#00ffff";
+                            ctx.fill();
+                            ctx.shadowBlur = 0; // Reset
+                        }
+                    }
+                });
+                requestAnimationFrame(drawStars);
+            }
+            
+            drawStars();
+        }
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

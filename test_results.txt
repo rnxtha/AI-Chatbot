@@ -1,0 +1,19 @@
+gemini-2.0-flash-lite => Status: 429 => {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-a
+
+gemini-1.5-flash => Status: 404 => {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available model
+
+gemini-1.5-flash-latest => Status: 404 => {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-latest is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of availabl
+
+gemini-1.5-flash-8b => Status: 404 => {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-8b is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available mo

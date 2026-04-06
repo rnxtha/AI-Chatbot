@@ -1,0 +1,287 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="chat-layout">
+    <!-- Left Sidebar -->
+    <div class="sidebar left-sidebar">
+        <div class="sidebar-section">
+            <h3 class="sidebar-title">Quick Prompts</h3>
+            <button class="prompt-btn active js-prompt">Brainstorm startup idea</button>
+            <button class="prompt-btn js-prompt">Generate sci-fi story</button>
+            <button class="prompt-btn js-prompt">Analyze market trends</button>
+            <button class="prompt-btn js-prompt">Code a neural network</button>
+        </div>
+
+        <div class="sidebar-section flex-grow">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3 class="sidebar-title">Recent Chats</h3>
+                <i class="fa-solid fa-ellipsis" style="color:var(--text-secondary); cursor:pointer;"></i>
+            </div>
+            <div class="history-list" style="overflow-y: auto; max-height: calc(100vh - 350px);">
+                <a href="?c=new" class="history-item {% if not active_conversation %}active{% endif %}">
+                    <i class="fa-solid fa-plus" style="margin-right: 8px;"></i> New Chat
+                </a>
+                
+                {% for c in conversations %}
+                <a href="?c={{ c.id }}" class="history-item {% if active_conversation and active_conversation.id == c.id %}active{% endif %}">
+                    <i class="fa-regular fa-message" style="margin-right: 8px;"></i> {{ c.title|default:"New Conversation"|truncatechars:22 }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Center Chat Area -->
+    <div class="main-chat">
+        <div class="chat-header">
+            <div class="chat-header-info">
+                <div class="header-avatar">
+                   <div class="logo-sphere" style="background: radial-gradient(circle at 30% 30%, #fff, #b026ff, var(--bg-dark)); box-shadow: 0 0 10px #b026ff; width: 35px; height: 35px;"></div>
+                </div>
+                <div class="header-text">
+                    <h2>RN AI</h2>
+                    <p>Online • Thinking</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-history" id="chatHistory">
+            {% if not messages %}
+            <div class="hero-section">
+                <!-- Fallback empty state -->
+            </div>
+            {% endif %}
+
+            {% for msg in messages %}
+            <div class="chat-bubble {{ msg.role }}">
+                <div class="bubble-content">{{ msg.content }}</div>
+            </div>
+            {% endfor %}
+            <div id="typingIndicator" style="display: none; color: #aaa; margin-left:10px; font-size:12px;">RN AI is typing...</div>
+        </div>
+
+        <div class="chat-input-wrapper">
+            <input type="text" id="chatInput" placeholder="Message RN AI..." class="styled-chat-input" autocomplete="off">
+            <button id="sendBtn" class="styled-send-btn">
+                <i class="fa-solid fa-arrow-right"></i>
+                <i class="fa-solid fa-microphone"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Right Sidebar -->
+    <div class="sidebar right-sidebar" style="display:flex; flex-direction:column; padding: 20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+            <h3 class="sidebar-title" style="margin:0;"><i class="fa-solid fa-code" style="color:#00ffff; margin-right:8px;"></i> Python Runner</h3>
+            <button id="runCodeBtn" class="btn glow-btn-small" style="padding: 5px 15px; font-size:12px; background: linear-gradient(135deg, #00ffff, #0055ff); border:none; color:white; border-radius: 8px; cursor:pointer;"><i class="fa-solid fa-play"></i> Run</button>
+        </div>
+        
+        <!-- Code Editor -->
+        <div style="flex-grow:1; display:flex; flex-direction:column; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1); border-radius:12px; overflow:hidden; margin-bottom: 10px;">
+            <div style="background:rgba(255,255,255,0.05); padding:8px 15px; font-size:12px; color:#aaa; border-bottom:1px solid rgba(255,255,255,0.1);">
+                main.py
+            </div>
+            <textarea id="codeEditor" style="flex-grow:1; background:transparent; border:none; color:#fff; padding:15px; font-family:'Consolas', monospace; font-size:13px; outline:none; resize:none;" spellcheck="false">
+# Write Python code here!
+name = input("Enter your name: ")
+print(f"Hello, {name}! Core Systems Initialized.")
+</textarea>
+        </div>
+        
+        <!-- Standard Input Box -->
+        <div style="height: 15%; min-height: 70px; display:flex; flex-direction:column; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.1); border-radius:12px; overflow:hidden; margin-bottom: 12px;">
+            <div style="background:rgba(255,255,255,0.02); padding:6px 15px; font-size:11px; color:#aaa; border-bottom:1px solid rgba(255,255,255,0.1);">
+                <i class="fa-solid fa-keyboard" style="margin-right:5px;"></i> Program Input (Standard Input)
+            </div>
+            <textarea id="stdinEditor" style="flex-grow:1; background:transparent; border:none; color:#fff; padding:8px 15px; font-family:'Consolas', monospace; font-size:12px; outline:none; resize:none;" placeholder="Type here what the input() function should receive..."></textarea>
+        </div>
+        
+        <!-- Code Output -->
+        <div style="height: 35%; display:flex; flex-direction:column; background:rgba(0,0,0,0.7); border:1px solid rgba(176,38,255,0.3); border-radius:12px; overflow:hidden; box-shadow: 0 0 10px rgba(176,38,255,0.1);">
+            <div style="background:rgba(176,38,255,0.1); padding:8px 15px; font-size:12px; color:#fff; border-bottom:1px solid rgba(176,38,255,0.3);">
+                <i class="fa-solid fa-bolt" style="color:#b026ff; margin-right:5px;"></i> Console Output
+            </div>
+            <pre id="codeOutput" style="flex-grow:1; padding:10px; margin:0; color:#00ffff; font-family:'Consolas', monospace; font-size:12px; overflow-y:auto; white-space:pre-wrap;">Ready.</pre>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Markdown Parser -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script>
+    const chatInput = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const chatHistory = document.getElementById('chatHistory');
+    const typingIndicator = document.getElementById('typingIndicator');
+
+    // Parse existing messages on load
+    document.querySelectorAll('.chat-bubble.assistant .bubble-content').forEach(el => {
+        let rawText = el.textContent || el.innerText;
+        el.innerHTML = marked.parse(rawText);
+        
+        // Add copy buttons to code blocks
+        el.querySelectorAll('pre').forEach(pre => {
+            pre.style.position = 'relative';
+            const copyBtn = document.createElement('button');
+            copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i> Copy';
+            copyBtn.className = 'copy-code-btn';
+            copyBtn.addEventListener('click', () => {
+                const codeNode = pre.querySelector('code');
+                const codeText = codeNode ? codeNode.innerText : pre.innerText;
+                navigator.clipboard.writeText(codeText);
+                copyBtn.innerHTML = '<i class="fa-solid fa-check"></i> Copied';
+                setTimeout(() => copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i> Copy', 2000);
+            });
+            pre.appendChild(copyBtn);
+        });
+    });
+
+    // Auto-scroll to bottom
+    function scrollToBottom() {
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+    scrollToBottom();
+
+    // Quick prompt feature
+    document.querySelectorAll('.js-prompt').forEach(btn => {
+        btn.addEventListener('click', () => {
+            chatInput.value = btn.innerText.trim();
+            document.querySelectorAll('.js-prompt').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        });
+    });
+
+    let currentConversationId = '{{ active_conversation.id|default_if_none:"" }}';
+
+    function addMessage(content, role) {
+        document.querySelector('.hero-section')?.remove();
+
+        const div = document.createElement('div');
+        div.className = `chat-bubble ${role}`;
+        
+        // Parse AI messages as Markdown format, raw text for user
+        let formattedContent = role === 'assistant' ? marked.parse(content) : content;
+        
+        div.innerHTML = `<div class="bubble-content">${formattedContent}</div>`;
+        
+        // Add copy buttons to dynamically generated code blocks
+        if (role === 'assistant') {
+            div.querySelectorAll('pre').forEach(pre => {
+                pre.style.position = 'relative';
+                const copyBtn = document.createElement('button');
+                copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i> Copy';
+                copyBtn.className = 'copy-code-btn';
+                copyBtn.addEventListener('click', () => {
+                    const codeNode = pre.querySelector('code');
+                    const codeText = codeNode ? codeNode.innerText : pre.innerText;
+                    navigator.clipboard.writeText(codeText);
+                    copyBtn.innerHTML = '<i class="fa-solid fa-check"></i> Copied';
+                    setTimeout(() => copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i> Copy', 2000);
+                });
+                pre.appendChild(copyBtn);
+            });
+        }
+        
+        chatHistory.insertBefore(div, typingIndicator);
+        scrollToBottom();
+    }
+
+    async function sendMessage() {
+        const msg = chatInput.value.trim();
+        if (!msg) return;
+
+        chatInput.value = '';
+        addMessage(msg, 'user');
+
+        typingIndicator.style.display = 'block';
+        scrollToBottom();
+
+        try {
+            const res = await fetch("{% url 'api_chat' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: msg,
+                    conversation_id: currentConversationId
+                })
+            });
+
+            const data = await res.json();
+            typingIndicator.style.display = 'none';
+
+            if (data.error) {
+                addMessage("Error: " + data.error, 'assistant');
+            } else {
+                addMessage(data.message, 'assistant');
+                if (!currentConversationId && data.conversation_id) {
+                    currentConversationId = data.conversation_id;
+                    // Add new chat to history panel
+                    const nav = document.createElement('a');
+                    nav.href = '?c=' + data.conversation_id;
+                    nav.className = 'history-item active';
+                    nav.innerHTML = `<i class="fa-regular fa-message"></i> ${data.title || 'New Chat'}`;
+                    document.querySelector('.history-list').appendChild(nav);
+                }
+            }
+        } catch (error) {
+            typingIndicator.style.display = 'none';
+            addMessage("Network Error: " + error, 'assistant');
+        }
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    // Python Code Runner Logic
+    const runCodeBtn = document.getElementById('runCodeBtn');
+    const codeEditor = document.getElementById('codeEditor');
+    const stdinEditor = document.getElementById('stdinEditor');
+    const codeOutput = document.getElementById('codeOutput');
+    
+    if (runCodeBtn && codeEditor && codeOutput) {
+        runCodeBtn.addEventListener('click', async () => {
+            const code = codeEditor.value;
+            const stdin = stdinEditor ? stdinEditor.value : '';
+            codeOutput.innerHTML = "Executing <span style='color:#b026ff'>...</span>";
+            runCodeBtn.disabled = true;
+            runCodeBtn.style.opacity = '0.5';
+            
+            try {
+                const res = await fetch("{% url 'api_run_code' %}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code, stdin: stdin })
+                });
+                const data = await res.json();
+                codeOutput.innerText = data.output || "Error: No output returned";
+            } catch(e) {
+                codeOutput.innerText = "Fetch Error: " + e;
+            } finally {
+                runCodeBtn.disabled = false;
+                runCodeBtn.style.opacity = '1';
+            }
+        });
+        
+        // Handle tab key inside textarea
+        codeEditor.addEventListener('keydown', function(e) {
+            if (e.key == 'Tab') {
+                e.preventDefault();
+                var start = this.selectionStart;
+                var end = this.selectionEnd;
+                this.value = this.value.substring(0, start) + "    " + this.value.substring(end);
+                this.selectionStart = this.selectionEnd = start + 4;
+            }
+        });
+    }
+
+</script>
+{% endblock %}

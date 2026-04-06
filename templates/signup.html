@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="auth-container glass-panel">
+    <h2>Create Your Account</h2>
+    <p>Unlock infinite possibilities with RN AI.</p>
+
+    {% if error %}
+    <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" action="{% url 'signup' %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" class="glass-input" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" class="glass-input" required>
+        </div>
+        <div class="form-group">
+            <label for="password_confirm">Confirm Password</label>
+            <input type="password" id="password_confirm" name="password_confirm" class="glass-input" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
+    </form>
+
+    <div class="auth-footer">
+        <p>Already have an account? <a href="{% url 'login' %}">Log in</a></p>
+    </div>
+</div>
+{% endblock %}

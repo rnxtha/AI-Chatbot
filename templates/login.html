@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="login-wrapper">
+    <div class="login-header">
+        <h2>Welcome Back to RN AI</h2>
+        <p>Sign in to continue your visionary journey.</p>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" action="{% url 'login' %}">
+        {% csrf_token %}
+        <div class="form-group-vertical">
+            <input type="text" id="username" name="username" class="glass-input" placeholder="Username" required>
+            <input type="password" id="password" name="password" class="glass-input" placeholder="Password" required>
+        </div>
+        
+        <div class="login-action">
+            <button type="submit" class="glow-login-btn">Log In</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
